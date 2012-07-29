@@ -63,10 +63,50 @@ def factory(view, cls):
     return wrapper
 
 
+from gaphas.constraint import Constraint
+
+class AspectRatioConstraint(Constraint):
+
+    def __init__(self, topleft, bottomright, ratio=1.0):
+        super(AspectRatioConstraint, self).__init__(topleft.x, topleft.y, bottomright.x, bottomright.y)
+        self.topleft = topleft
+        self.bottomright = bottomright
+        self.ratio = ratio
+
+    def solve(self):
+	# Take the "strongest" vars, use those as 
+	var1, var2 = self._weakest[-2:]
+        self.solve_for(var1)
+        self.solve_for(var2)
+
+    def solve_for(self, var):
+        if var is self.topleft.x:
+	    print 'solve topleft x -> bottomright y', var
+	    self.topleft.x = self.bottomright.x - (self.bottomright.y - self.topleft.y) / self.ratio
+	elif var is self.topleft.y:
+	    print 'solve topleft y -> bottomright x', var
+	    self.topleft.y = self.bottomright.y - (self.bottomright.x - self.topleft.x) / self.ratio
+        elif var is self.bottomright.x:
+            print 'solve move of bottomright x -> topleft y', var, self.topleft
+	    print 'bottomright.x', self.bottomright.x,
+	    self.bottomright.x = self.topleft.x + (self.bottomright.y - self.topleft.y) * self.ratio
+	    print '->', self.bottomright.x
+	elif var is self.bottomright.y:
+            print 'solve move of bottomright y -> topleft x', var
+	    print 'bottomright.y', self.bottomright.y,
+	    self.bottomright.y = self.topleft.y + (self.bottomright.x - self.topleft.x) * self.ratio
+	    print '->', self.bottomright.y
+
+
 class MyBox(Box):
     """Box with an example connection protocol.
     """
 
+    def __init__(self, width=10, height=10):
+        super(MyBox, self).__init__(width, height)
+        self._constraints.append(AspectRatioConstraint(self._handles[NW].pos, self._handles[SE].pos))
+
+        
 class MyLine(Line):
     """Line with experimental connection protocol.
     """
@@ -493,4 +533,4 @@ if __name__ == '__main__':
     else:
         main()
 
-# vim: sw=4:et:
+# vim: sw=4:et:ai
