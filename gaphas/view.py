@@ -863,6 +863,7 @@ class GtkView(Gtk.DrawingArea, Gtk.Scrollable, View):
         """
         Render canvas to the screen.
         """
+        print("do_draw")
         if not self._canvas:
             return
 

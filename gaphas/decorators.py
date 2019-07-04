@@ -145,7 +145,7 @@ class AsyncIO(object):
                         finally:
                             delattr(holder, async_id)
                         return False
-
+                    print("async call of", func.__name__)
                     setattr(holder, async_id, source(async_wrapper).attach())
 
         return wrapper
